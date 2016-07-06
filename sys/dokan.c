@@ -317,6 +317,7 @@ Return Value:
   if (GetIdentifierType(dokanGlobal) == DGL) {
     DDbgPrint("  Delete Global DeviceObject\n");
 
+    KeSetEvent(&dokanGlobal->KillDeleteDeviceEvent, 0, FALSE);
     RtlInitUnicodeString(&symbolicLinkName, symbolicLinkBuf);
     IoDeleteSymbolicLink(&symbolicLinkName);
 
@@ -491,6 +492,7 @@ VOID PrintIdType(__in VOID *Id) {
 
 BOOLEAN
 DokanCheckCCB(__in PDokanDCB Dcb, __in_opt PDokanCCB Ccb) {
+  PDokanVCB vcb;
   ASSERT(Dcb != NULL);
   if (GetIdentifierType(Dcb) != DCB) {
     PrintIdType(Dcb);
@@ -507,8 +509,9 @@ DokanCheckCCB(__in PDokanDCB Dcb, __in_opt PDokanCCB Ccb) {
     DDbgPrint("   MountId is different\n");
     return FALSE;
   }
-
-  if (!Dcb->Mounted) {
+  
+  vcb = Dcb->Vcb;
+  if (!vcb || IsUnmountPendingVcb(vcb)) {
     DDbgPrint("  Not mounted\n");
     return FALSE;
   }

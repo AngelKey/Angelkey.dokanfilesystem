@@ -240,6 +240,9 @@ DokanFreeCCB(__in PDokanCCB ccb) {
   ASSERT(ccb != NULL);
 
   fcb = ccb->Fcb;
+  if (!fcb) {
+      return;
+  }
 
   KeEnterCriticalRegion();
   ExAcquireResourceExclusiveLite(&fcb->Resource, TRUE);
@@ -481,20 +484,18 @@ Return Value:
 
     PrintIdType(vcb);
 
-    if (GetIdentifierType(vcb) == DCB) {
-      dcb = DeviceObject->DeviceExtension;
-      if (!dcb->Mounted) {
-        DDbgPrint("  IdentifierType is dcb which is not mounted\n");
-        status = STATUS_VOLUME_DISMOUNTED;
-        __leave;
-      }
-    }
-
     if (GetIdentifierType(vcb) != VCB) {
       DDbgPrint("  IdentifierType is not vcb\n");
       status = STATUS_SUCCESS;
       __leave;
     }
+
+    if (IsUnmountPendingVcb(vcb)) {
+        DDbgPrint("  IdentifierType is vcb which is not mounted\n");
+        status = STATUS_VOLUME_DISMOUNTED;
+        __leave;
+    }
+
     dcb = vcb->Dcb;
 
     BOOLEAN isNetworkFileSystem =
@@ -691,6 +692,10 @@ Return Value:
       ccb->Flags |= DOKAN_DELETE_ON_CLOSE;
       DDbgPrint(
           "  FILE_DELETE_ON_CLOSE is set so remember for delete in cleanup\n");
+    }
+
+    if (irpSp->Parameters.Create.Options & FILE_OPEN_FOR_BACKUP_INTENT) {
+        DDbgPrint("FILE_OPEN_FOR_BACKUP_INTENT\n");
     }
 
     fileObject->FsContext = &fcb->AdvancedFCBHeader;

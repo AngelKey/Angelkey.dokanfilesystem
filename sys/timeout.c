@@ -85,6 +85,7 @@ VOID DokanUnmount(__in PDokanDCB Dcb) {
 VOID DokanCheckKeepAlive(__in PDokanDCB Dcb) {
   LARGE_INTEGER tickCount;
   ULONG mounted;
+  PDokanVCB vcb;
 
   // DDbgPrint("==> DokanCheckKeepAlive\n");
 
@@ -94,14 +95,15 @@ VOID DokanCheckKeepAlive(__in PDokanDCB Dcb) {
 
   if (Dcb->TickCount.QuadPart < tickCount.QuadPart) {
 
-    mounted = Dcb->Mounted;
+    vcb = Dcb->Vcb;
+    
 
     ExReleaseResourceLite(&Dcb->Resource);
 
     DDbgPrint("  Timeout, umount\n");
 
-    if (!mounted) {
-      // not mounted
+    if (IsUnmountPendingVcb(vcb)) {
+      DDbgPrint("  Volume is not mounted\n");
       KeLeaveCriticalRegion();
       return;
     }

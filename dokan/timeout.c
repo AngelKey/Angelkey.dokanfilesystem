@@ -69,17 +69,22 @@ UINT WINAPI DokanKeepAlive(PDOKAN_INSTANCE DokanInstance) {
   ULONG ReturnedLength;
   WCHAR rawDeviceName[MAX_PATH];
 
-  device = CreateFile(
-      GetRawDeviceName(DokanInstance->DeviceName, rawDeviceName, MAX_PATH),
-      GENERIC_READ | GENERIC_WRITE,       // dwDesiredAccess
-      FILE_SHARE_READ | FILE_SHARE_WRITE, // dwShareMode
-      NULL,                               // lpSecurityAttributes
-      OPEN_EXISTING,                      // dwCreationDistribution
-      0,                                  // dwFlagsAndAttributes
-      NULL                                // hTemplateFile
+  
+  while (TRUE) {
+
+      device = CreateFile(
+          GetRawDeviceName(DokanInstance->DeviceName, rawDeviceName, MAX_PATH),
+          GENERIC_READ | GENERIC_WRITE,       // dwDesiredAccess
+          FILE_SHARE_READ | FILE_SHARE_WRITE, // dwShareMode
+          NULL,                               // lpSecurityAttributes
+          OPEN_EXISTING,                      // dwCreationDistribution
+          0,                                  // dwFlagsAndAttributes
+          NULL                                // hTemplateFile
       );
 
-  while (device != INVALID_HANDLE_VALUE) {
+      if (device != INVALID_HANDLE_VALUE) {
+          break;
+      }
 
     BOOL status = DeviceIoControl(device,          // Handle to device
                                   IOCTL_KEEPALIVE, // IO Control code
@@ -93,10 +98,9 @@ UINT WINAPI DokanKeepAlive(PDOKAN_INSTANCE DokanInstance) {
     if (!status) {
       break;
     }
+    CloseHandle(device);
     Sleep(DOKAN_KEEPALIVE_TIME);
   }
-
-  CloseHandle(device);
 
   _endthreadex(0);
   return STATUS_SUCCESS;

@@ -46,11 +46,6 @@ DokanDispatchQueryVolumeInformation(__in PDEVICE_OBJECT DeviceObject,
 
     dcb = vcb->Dcb;
 
-    if (!dcb->Mounted) {
-      status = STATUS_VOLUME_DISMOUNTED;
-      __leave;
-    }
-
     irpSp = IoGetCurrentIrpStackLocation(Irp);
     buffer = Irp->AssociatedIrp.SystemBuffer;
 
@@ -63,10 +58,6 @@ DokanDispatchQueryVolumeInformation(__in PDEVICE_OBJECT DeviceObject,
     }
 
     DDbgPrint("  FileName: %wZ\n", &fileObject->FileName);
-
-    ccb = fileObject->FsContext2;
-
-    //	ASSERT(ccb != NULL);
 
     switch (irpSp->Parameters.QueryVolume.FsInformationClass) {
     case FileFsVolumeInformation:
@@ -203,6 +194,7 @@ DokanDispatchQueryVolumeInformation(__in PDEVICE_OBJECT DeviceObject,
       ULONG eventLength = sizeof(EVENT_CONTEXT);
       PEVENT_CONTEXT eventContext;
 
+      ccb = fileObject->FsContext2;
       if (ccb && !DokanCheckCCB(vcb->Dcb, fileObject->FsContext2)) {
         status = STATUS_INVALID_PARAMETER;
         __leave;
@@ -251,7 +243,6 @@ VOID DokanCompleteQueryVolumeInformation(__in PIRP_ENTRY IrpEntry,
   ULONG info = 0;
   ULONG bufferLen = 0;
   PVOID buffer = NULL;
-  PDokanCCB ccb;
   PDokanDCB dcb;
   PDokanVCB vcb;
 
@@ -260,14 +251,8 @@ VOID DokanCompleteQueryVolumeInformation(__in PIRP_ENTRY IrpEntry,
   irp = IrpEntry->Irp;
   irpSp = IrpEntry->IrpSp;
 
-  ccb = IrpEntry->FileObject->FsContext2;
   vcb = DeviceObject->DeviceExtension;
   dcb = vcb->Dcb;
-
-  // ASSERT(ccb != NULL);
-
-  // does not save Context!!
-  // ccb->UserContext = EventInfo->Context;
 
   // buffer which is used to copy VolumeInfo
   buffer = irp->AssociatedIrp.SystemBuffer;
@@ -354,11 +339,6 @@ DokanDispatchSetVolumeInformation(__in PDEVICE_OBJECT DeviceObject,
     }
 
     dcb = vcb->Dcb;
-
-    if (!dcb->Mounted) {
-      status = STATUS_VOLUME_DISMOUNTED;
-      __leave;
-    }
 
     irpSp = IoGetCurrentIrpStackLocation(Irp);
     buffer = Irp->AssociatedIrp.SystemBuffer;
