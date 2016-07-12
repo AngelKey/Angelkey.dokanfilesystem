@@ -29,39 +29,16 @@ DokanExceptionFilter(__in PIRP Irp, __in PEXCEPTION_POINTERS ExceptionPointer) {
   NTSTATUS ExceptionCode;
   PEXCEPTION_RECORD ExceptRecord;
 
-  ExceptRecord = ExceptionPointer->ExceptionRecord;
-  ExceptionCode = ExceptRecord->ExceptionCode;
+  ExceptRecord = ExceptionPointer?ExceptionPointer->ExceptionRecord:NULL;
+  ExceptionCode = ExceptRecord?ExceptRecord->ExceptionCode:0;
 
   DbgPrint("-------------------------------------------------------------\n");
   DbgPrint("Exception happends in Dokan (code %xh):\n", ExceptionCode);
-  DbgPrint(".exr %p;.cxr %p;\n", ExceptionPointer->ExceptionRecord,
-           ExceptionPointer->ContextRecord);
+  DbgPrint(".exr %p;.cxr %p;\n", ExceptRecord,
+           ExceptionPointer?ExceptionPointer->ContextRecord:NULL);
   DbgPrint("-------------------------------------------------------------\n");
 
-  DbgBreakPoint();
-
-  if (FsRtlIsNtstatusExpected(ExceptionCode)) {
-    //
-    // If the exception is expected execute our handler
-    //
-
-    DDbgPrint("DokanExceptionFilter: Catching exception %xh\n", ExceptionCode);
-
-    Status = EXCEPTION_EXECUTE_HANDLER;
-
-  } else {
-
-    //
-    // Continue search for an higher level exception handler
-    //
-
-    DDbgPrint("DokanExceptionFilter: Passing on exception %#x\n",
-              ExceptionCode);
-
-    Status = EXCEPTION_CONTINUE_SEARCH;
-  }
-
-  return Status;
+  return EXCEPTION_EXECUTE_HANDLER;
 }
 
 NTSTATUS
@@ -83,7 +60,7 @@ DokanExceptionHandler(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp,
       Status = STATUS_INVALID_PARAMETER;
     } else if (Vcb->Identifier.Type != VCB) {
       Status = STATUS_INVALID_PARAMETER;
-    } else if (!Vcb->Dcb->Mounted) {
+    } else if (!Vcb->Dcb || !Vcb->Dcb->Mounted) {
       Status = STATUS_VOLUME_DISMOUNTED;
     }
 
