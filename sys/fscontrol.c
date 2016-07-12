@@ -53,6 +53,11 @@ NTSTATUS DokanOplockRequest(__in PIRP *pIrp) {
   FsControlCode = IrpSp->Parameters.FileSystemControl.FsControlCode;
 
   fileObject = IrpSp->FileObject;
+  if (fileObject == NULL) {
+	  DDbgPrint("  fileObject == NULL\n");
+	  return STATUS_INVALID_PARAMETER;
+  }
+
   DokanPrintFileName(fileObject);
 
   Ccb = fileObject->FsContext2;

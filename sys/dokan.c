@@ -115,7 +115,7 @@ DokanFilterCallbackAcquireForCreateSection(__in PFS_FILTER_CALLBACK_DATA
 
   DDbgPrint("DokanFilterCallbackAcquireForCreateSection\n");
 
-  header = CallbackData->FileObject->FsContext;
+  header = CallbackData->FileObject?CallbackData->FileObject->FsContext:NULL;
 
   if (header && header->Resource) {
     KeEnterCriticalRegion();
@@ -484,7 +484,7 @@ VOID PrintIdType(__in VOID *Id) {
     DDbgPrint("   IdType = CCB\n");
     break;
   default:
-    DDbgPrint("   IdType = Unknown\n");
+    DDbgPrint("   IdType = Unknown (%d)\n", GetIdentifierType(Id));
     break;
   }
 }
