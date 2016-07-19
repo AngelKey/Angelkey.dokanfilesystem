@@ -596,6 +596,9 @@ BOOLEAN IsMounted(__in PDEVICE_OBJECT DeviceObject) {
         vcb = DeviceObject->DeviceExtension;
     }
 
+    if (vcb == NULL)
+        return FALSE;
+    
     if (GetIdentifierType(vcb) == VCB) {
         dcb = vcb->Dcb;
         if (IsFlagOn(vcb->Flags, VCB_MOUNTED)) {
@@ -624,6 +627,9 @@ BOOLEAN IsDeletePending(__in PDEVICE_OBJECT DeviceObject) {
     }
 
     dcb = DeviceObject->DeviceExtension;
+    if (dcb == NULL)
+        return TRUE;
+    
     if (GetIdentifierType(dcb) == DCB) {
         
         if (IsFlagOn(dcb->Flags, DCB_DELETE_PENDING)) {
@@ -651,6 +657,11 @@ BOOLEAN IsUnmountPending(__in PDEVICE_OBJECT DeviceObject) {
         return FALSE;
 
     dcb = DeviceObject->DeviceExtension;
+
+    if (dcb == NULL) 
+        return FALSE;
+    
+
     if (GetIdentifierType(dcb) == DCB) {
         vcb = dcb->Vcb;
     } else {
