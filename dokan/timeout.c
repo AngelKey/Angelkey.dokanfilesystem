@@ -82,7 +82,11 @@ UINT WINAPI DokanKeepAlive(PDOKAN_INSTANCE DokanInstance) {
           NULL                                // hTemplateFile
       );
 
-      if (device != INVALID_HANDLE_VALUE) {
+      if (device == INVALID_HANDLE_VALUE) {
+          DbgPrint(
+              "Dokan Error: DokanKeepAlive CreateFile failed %ws: %d\n",
+              GetRawDeviceName(DokanInstance->DeviceName, rawDeviceName, MAX_PATH),
+              GetLastError());
           break;
       }
 
