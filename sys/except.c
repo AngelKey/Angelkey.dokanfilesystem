@@ -84,7 +84,7 @@ DokanExceptionHandler(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp,
     } else if (Vcb->Identifier.Type != VCB) {
       Status = STATUS_INVALID_PARAMETER;
     } else if (IsUnmountPendingVcb(Vcb)) {
-      Status = STATUS_VOLUME_DISMOUNTED;
+      Status = STATUS_NO_SUCH_DEVICE;
     }
 
     if (Status == STATUS_PENDING) {

@@ -49,6 +49,7 @@ VOID DokanIrpCancelRoutine(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp) {
     serialNumber = irpEntry->SerialNumber;
 
     RemoveEntryList(&irpEntry->ListEntry);
+    InitializeListHead(&irpEntry->ListEntry);
 
     // If Write is canceld before completion and buffer that saves writing
     // content is not freed, free it here
@@ -159,7 +160,7 @@ RegisterPendingIrpMain(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp,
     vcb = DeviceObject->DeviceExtension;
     if (CheckMount && IsUnmountPendingVcb(vcb)) {
       DDbgPrint(" device is not mounted\n");
-      return STATUS_DEVICE_DOES_NOT_EXIST;
+      return STATUS_NO_SUCH_DEVICE;
     }
   }
 
@@ -266,7 +267,7 @@ DokanRegisterPendingIrpForEvent(__in PDEVICE_OBJECT DeviceObject,
 
   if (IsUnmountPendingVcb(vcb)) {
       DDbgPrint("  Volume is dismounted\n");
-      return STATUS_VOLUME_DISMOUNTED;
+      return STATUS_NO_SUCH_DEVICE;
   }
 
   // DDbgPrint("DokanRegisterPendingIrpForEvent\n");
@@ -320,7 +321,7 @@ DokanCompleteIrp(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp) {
 
   if (IsUnmountPendingVcb(vcb)) {
       DDbgPrint("      Volume is not mounted\n");
-      return STATUS_VOLUME_DISMOUNTED;
+      return STATUS_NO_SUCH_DEVICE;
   }
 
   // DDbgPrint("      Lock IrpList.ListLock\n");
@@ -381,7 +382,7 @@ DokanCompleteIrp(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp) {
 
     if (IsUnmountPendingVcb(vcb)) {
         DDbgPrint("      Volume is not mounted second check\n");
-        return STATUS_VOLUME_DISMOUNTED;
+        return STATUS_NO_SUCH_DEVICE;
     }
 
     switch (irpSp->MajorFunction) {
@@ -551,8 +552,8 @@ DokanEventStart(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp) {
       driverInfo->Status = DOKAN_START_FAILED;
       Irp->IoStatus.Status = STATUS_SUCCESS;
       Irp->IoStatus.Information = sizeof(EVENT_DRIVER_INFO);
-      KeLeaveCriticalRegion();
       ExReleaseResourceLite(&dokanGlobal->Resource);
+      KeLeaveCriticalRegion();
       return STATUS_SUCCESS;
   }
 
@@ -561,6 +562,8 @@ DokanEventStart(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp) {
 
   status = RtlStringFromGUID(&baseGuid, &unicodeGuid);
   if (!NT_SUCCESS(status)) {
+     ExReleaseResourceLite(&dokanGlobal->Resource);
+     KeLeaveCriticalRegion();
     return status;
   }
   RtlZeroMemory(baseGuidString, sizeof(baseGuidString));

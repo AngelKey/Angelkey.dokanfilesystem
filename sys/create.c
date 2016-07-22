@@ -167,6 +167,7 @@ DokanFreeFCB(__in PDokanFCB Fcb) {
   if (Fcb->FileCount == 0) {
 
     RemoveEntryList(&Fcb->NextFCB);
+    InitializeListHead(&Fcb->NextCCB);
 
     DDbgPrint("  Free FCB:%p\n", Fcb);
     ExFreePool(Fcb->FileName.Buffer);
@@ -241,13 +242,14 @@ DokanFreeCCB(__in PDokanCCB ccb) {
 
   fcb = ccb->Fcb;
   if (!fcb) {
-      return;
+      return STATUS_SUCCESS;
   }
 
   KeEnterCriticalRegion();
   ExAcquireResourceExclusiveLite(&fcb->Resource, TRUE);
 
   RemoveEntryList(&ccb->NextCCB);
+  InitializeListHead(&ccb->NextCCB);
 
   ExReleaseResourceLite(&fcb->Resource);
   KeLeaveCriticalRegion();
@@ -492,7 +494,7 @@ Return Value:
 
     if (IsUnmountPendingVcb(vcb)) {
         DDbgPrint("  IdentifierType is vcb which is not mounted\n");
-        status = STATUS_VOLUME_DISMOUNTED;
+        status = STATUS_NO_SUCH_DEVICE;
         __leave;
     }
 

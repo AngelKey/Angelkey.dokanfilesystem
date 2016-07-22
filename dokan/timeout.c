@@ -99,10 +99,13 @@ UINT WINAPI DokanKeepAlive(PDOKAN_INSTANCE DokanInstance) {
                                   &ReturnedLength, // Bytes placed in buffer.
                                   NULL             // synchronous call
                                   );
-    if (!status) {
-      break;
-    }
+    
     CloseHandle(device);
+
+    if (!status) {
+        break;
+    }
+
     Sleep(DOKAN_KEEPALIVE_TIME);
   }
 

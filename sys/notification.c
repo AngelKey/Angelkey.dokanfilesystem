@@ -399,7 +399,7 @@ VOID DokanStopEventNotificationThread(__in PDokanDCB Dcb) {
     DDbgPrint("<== DokanStopEventNotificationThread\n");
 }
 
-NTSTATUS DokanEventRelease(__in PDEVICE_OBJECT DeviceObject) {
+NTSTATUS DokanEventRelease(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp) {
     PDokanDCB dcb;
     PDokanVCB vcb;
     PDokanFCB fcb;
@@ -430,7 +430,7 @@ NTSTATUS DokanEventRelease(__in PDEVICE_OBJECT DeviceObject) {
         return STATUS_SUCCESS;
     }
 
-    status = IoAcquireRemoveLock(&dcb->RemoveLock, TAG);
+    status = IoAcquireRemoveLock(&dcb->RemoveLock, Irp);
     if (!NT_SUCCESS(status))
     {
         DDbgPrint("IoAcquireRemoveLock failed with %#x", status);
@@ -440,7 +440,7 @@ NTSTATUS DokanEventRelease(__in PDEVICE_OBJECT DeviceObject) {
     SetLongFlag(vcb->Flags, VCB_DISMOUNT_PENDING);
     SetLongFlag(dcb->Flags, DCB_DELETE_PENDING);
 
-    DDbgPrint("     Delete mountpoint for device %wZ\n", dcb->DiskDeviceName);
+    DDbgPrint("     Starting unmount for device %wZ\n", dcb->DiskDeviceName);
 
     ReleasePendingIrp(&dcb->PendingIrp);
     ReleasePendingIrp(&dcb->PendingEvent);
@@ -477,8 +477,6 @@ NTSTATUS DokanEventRelease(__in PDEVICE_OBJECT DeviceObject) {
         }
         ExReleaseResourceLite(&fcb->Resource);
 
-        //DokanFreeFCB(fcb);
-
     }
 
     ExReleaseResourceLite(&vcb->Resource);
@@ -486,7 +484,7 @@ NTSTATUS DokanEventRelease(__in PDEVICE_OBJECT DeviceObject) {
 
     
 
-    IoReleaseRemoveLockAndWait(&dcb->RemoveLock, TAG);
+    IoReleaseRemoveLockAndWait(&dcb->RemoveLock, Irp);
 
     DokanDeleteDeviceObject(dcb);
 
@@ -555,5 +553,5 @@ NTSTATUS DokanGlobalEventRelease(__in PDEVICE_OBJECT DeviceObject,
             return STATUS_DEVICE_BUSY;
     }
 
-    return DokanEventRelease(mountEntry->MountControl.DeviceObject);
+    return DokanEventRelease(mountEntry->MountControl.DeviceObject, Irp);
 }

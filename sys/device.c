@@ -145,7 +145,7 @@ DiskDeviceControl(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp) {
   vcb = dcb->Vcb;
   if (IsUnmountPendingVcb(vcb)) {
       DDbgPrint("   Volume is unmounted so ignore dcb requests\n");
-      return STATUS_DEVICE_DOES_NOT_EXIST;
+      return STATUS_NO_SUCH_DEVICE;
   }
 
   DDbgPrint("   DiskDeviceControl Device name %wZ \n", dcb->DiskDeviceName);
@@ -570,7 +570,7 @@ DiskDeviceControl(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp) {
               RtlCompareMemory(mountdevName->Name, dcb->MountPoint->Buffer,
                                mountdevName->NameLength) ==
                   mountdevName->NameLength) {
-            status = DokanEventRelease(vcb->DeviceObject);
+            status = DokanEventRelease(vcb->DeviceObject, Irp);
           } else {
             DDbgPrint("   Deleted Mount Point doesn't match device excepted "
                       "mount point.\n");
@@ -579,7 +579,7 @@ DiskDeviceControl(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp) {
         // Or, if no requested mount point, we assume the first deleted one
         // release devices
         else {
-          status = DokanEventRelease(vcb->DeviceObject);
+          status = DokanEventRelease(vcb->DeviceObject, Irp);
         }
       } else {
         DDbgPrint("   MountDev Name is undefined.\n");
@@ -831,7 +831,7 @@ DiskDeviceControlWithLock(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp) {
         return STATUS_INVALID_PARAMETER;
     }
 
-    status = IoAcquireRemoveLock(&dcb->RemoveLock, TAG);
+    status = IoAcquireRemoveLock(&dcb->RemoveLock, Irp);
     if (!NT_SUCCESS(status)) {
         DDbgPrint("IoAcquireRemoveLock failed with %#x", status);
         return STATUS_INSUFFICIENT_RESOURCES;
@@ -839,11 +839,11 @@ DiskDeviceControlWithLock(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp) {
 
     if (IsDeletePending(DeviceObject)) {
         DDbgPrint("Device is deleted, so go out here \n");
-        return STATUS_DEVICE_REMOVED;
+        return STATUS_NO_SUCH_DEVICE;
     }
     status = DiskDeviceControl(DeviceObject, Irp);
 
-    IoReleaseRemoveLock(&dcb->RemoveLock, TAG);
+    IoReleaseRemoveLock(&dcb->RemoveLock, Irp);
 
     return status;
 }
@@ -926,7 +926,7 @@ Return Value:
 
     case IOCTL_EVENT_RELEASE:
       DDbgPrint("  IOCTL_EVENT_RELEASE\n");
-      status = DokanEventRelease(DeviceObject);
+      status = DokanEventRelease(DeviceObject, Irp);
       break;
 
     case IOCTL_EVENT_WRITE:

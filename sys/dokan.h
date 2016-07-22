@@ -87,7 +87,7 @@ extern LOOKASIDE_LIST_EX g_DokanFCBLookasideList;
 #define DOKAN_KEEPALIVE_TIMEOUT (1000 * 15) // in millisecond
 
 #if _WIN32_WINNT > 0x501
- 
+
 #define DDbgPrint(...)                                                         \
   if (g_Debug) {                                                               \
     KdPrintEx(                                                                 \
@@ -497,7 +497,7 @@ NTSTATUS
 DokanDispatchRequest(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp);
 
 NTSTATUS
-DokanEventRelease(__in PDEVICE_OBJECT DeviceObject);
+DokanEventRelease(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp);
 
 NTSTATUS
 DokanGlobalEventRelease(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp);
