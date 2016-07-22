@@ -210,12 +210,12 @@ PDokanCCB DokanAllocateCCB(__in PDokanDCB Dcb, __in PDokanFCB Fcb) {
   ASSERT(Fcb != NULL);
 
   RtlZeroMemory(ccb, sizeof(DokanCCB));
-
+  InterlockedIncrement(&Dcb->TempFileId);
   ccb->Identifier.Type = CCB;
   ccb->Identifier.Size = sizeof(DokanCCB);
-
+  ccb->TempFileId = Dcb->TempFileId;
   ccb->Fcb = Fcb;
-
+  DDbgPrint("   Allocated CCB with id %lu \n", Dcb->TempFileId);
   ExInitializeResourceLite(&ccb->Resource);
 
   InitializeListHead(&ccb->NextCCB);
@@ -248,6 +248,11 @@ DokanFreeCCB(__in PDokanCCB ccb) {
   KeEnterCriticalRegion();
   ExAcquireResourceExclusiveLite(&fcb->Resource, TRUE);
 
+  DDbgPrint("   Free CCB with id %lu \n", ccb->TempFileId);
+
+  if (IsListEmpty(&ccb->NextCCB)) {
+      DDbgPrint("  Free CCB list is empty here \n")
+  }
   RemoveEntryList(&ccb->NextCCB);
   InitializeListHead(&ccb->NextCCB);
 

@@ -249,7 +249,7 @@ typedef struct _DokanDiskControlBlock {
   ULONG MountId;
   ULONG Flags;
   LARGE_INTEGER TickCount;
-
+  LONG TempFileId;
   CACHE_MANAGER_CALLBACKS CacheManagerCallbacks;
   CACHE_MANAGER_CALLBACKS CacheManagerNoOpCallbacks;
 
@@ -344,7 +344,7 @@ typedef struct _DokanContextControlBlock {
   ULONG SearchPatternLength;
 
   ULONG Flags;
-
+  LONG TempFileId;
   int FileCount;
   ULONG MountId;
 } DokanCCB, *PDokanCCB;
