@@ -251,10 +251,12 @@ DokanFreeCCB(__in PDokanCCB ccb) {
   DDbgPrint("   Free CCB with id %lu \n", ccb->TempFileId);
 
   if (IsListEmpty(&ccb->NextCCB)) {
-      DDbgPrint("  Free CCB list is empty here \n")
+      DDbgPrint("  WARNING. &ccb->NextCCB is empty. \n This should never happen, so check the behavior.\n Would produce BSOD \n")
   }
-  RemoveEntryList(&ccb->NextCCB);
-  InitializeListHead(&ccb->NextCCB);
+  else {
+      RemoveEntryList(&ccb->NextCCB);
+      InitializeListHead(&ccb->NextCCB);
+  }
 
   ExReleaseResourceLite(&fcb->Resource);
   KeLeaveCriticalRegion();
