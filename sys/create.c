@@ -1115,6 +1115,7 @@ Return Value:
                            OPLOCK_FLAG_OPLOCK_KEY_CHECK_ONLY, NULL, NULL, NULL);
 
     if (!NT_SUCCESS(status)) {
+        DDbgPrint("   FsRtlCheckOplockEx return status = 0x%08x\n", status);
       __leave;
     }
 
@@ -1270,6 +1271,8 @@ VOID DokanCompleteCreate(__in PIRP_ENTRY IrpEntry,
     break;
   }
 
+  DokanPrintNTStatus(status);
+
   // If volume is write-protected, we subbed FILE_OPEN for FILE_OPEN_IF
   // before call to userland in DokanDispatchCreate.
   // In this case, a not found error should return write protected status.
@@ -1317,7 +1320,7 @@ VOID DokanCompleteCreate(__in PIRP_ENTRY IrpEntry,
       }
     }
   } else {
-    DDbgPrint("   IRP_MJ_CREATE failed. Free CCB:%p\n", ccb);
+    DDbgPrint("   IRP_MJ_CREATE failed. Free CCB:%p. Status 0x%x\n", ccb, status);
     DokanFreeCCB(ccb);
     KeEnterCriticalRegion();
     ExAcquireResourceExclusiveLite(&fcb->Resource, TRUE);

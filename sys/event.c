@@ -385,6 +385,10 @@ DokanCompleteIrp(__in PDEVICE_OBJECT DeviceObject, __in PIRP Irp) {
         return STATUS_NO_SUCH_DEVICE;
     }
 
+    if (eventInfo && eventInfo->Status == STATUS_PENDING) {
+        DDbgPrint("      !!WARNING!! Do not return STATUS_PENDING DokanCompleteIrp!");
+    }
+
     switch (irpSp->MajorFunction) {
     case IRP_MJ_DIRECTORY_CONTROL:
       DokanCompleteDirectoryControl(irpEntry, eventInfo);
