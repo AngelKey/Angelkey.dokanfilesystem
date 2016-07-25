@@ -174,7 +174,11 @@ DokanFreeFCB(__in PDokanFCB Fcb) {
     InitializeListHead(&Fcb->NextCCB);
 
     DDbgPrint("  Free FCB:%p\n", Fcb);
+    
     ExFreePool(Fcb->FileName.Buffer);
+    Fcb->FileName.Buffer = NULL;
+    Fcb->FileName.Length = 0;
+    Fcb->FileName.MaximumLength = 0;
 
     FsRtlUninitializeOplock(DokanGetFcbOplock(Fcb));
 
