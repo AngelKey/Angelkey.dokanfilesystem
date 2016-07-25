@@ -252,6 +252,7 @@ DokanFreeCCB(__in PDokanCCB ccb) {
 
   if (IsListEmpty(&ccb->NextCCB)) {
       DDbgPrint("  WARNING. &ccb->NextCCB is empty. \n This should never happen, so check the behavior.\n Would produce BSOD \n")
+      return STATUS_SUCCESS;
   }
   else {
       RemoveEntryList(&ccb->NextCCB);
