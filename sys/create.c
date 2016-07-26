@@ -1342,6 +1342,7 @@ VOID DokanCompleteCreate(__in PIRP_ENTRY IrpEntry,
     ExReleaseResourceLite(&fcb->Resource);
     KeLeaveCriticalRegion();
     DokanFreeFCB(fcb);
+    IrpEntry->FileObject->FsContext2 = NULL;
   }
 
   DokanCompleteIrpRequest(irp, status, info);
