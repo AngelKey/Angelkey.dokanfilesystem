@@ -36,8 +36,10 @@
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."
                   AllowSameVersionUpgrades="yes"
-                  DisallowUpgradeErrorMessage="A previous version of [ProductName] is already installed. Please uninstall the existing version first, reboot the system and start the setup again."
-                  Disallow="yes"/>
+                  Disallow="no"/>
+
+    <!-- DisallowUpgradeErrorMessage="A previous version of [ProductName] is already installed. Please uninstall the existing version first, reboot the system and start the setup again."
+    -->
 
     <Property Id="ARPNOREPAIR" Value="1" />
     <Property Id="ARPNOMODIFY" Value="1" />
