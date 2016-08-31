@@ -3,7 +3,7 @@ set VCTargetsPath=%PROGRAMFILES%
 IF %processor_architecture%==AMD64 set VCTargetsPath=%PROGRAMFILES(x86)%
 set VCTargetsPath=%VCTargetsPath%\MSBuild\Microsoft.Cpp\v4.0\V140
 
-:: Jenkins tends to barf when this bud.bat calls the other one, so do it separately
+:: Jenkins tends to barf when this build.bat calls the other one, so do it separately
 if NOT %1. == WIXONLY. ( 
 	REM set version info, edit version.txt before running the batch
 	if NOT exist SetAssemblyVersion\bin\Release\SetAssemblyVersion.exe (
