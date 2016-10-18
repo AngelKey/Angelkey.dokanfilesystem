@@ -31,8 +31,7 @@
     <ProductionCertificate>CN="Keybase, Inc.", O="Keybase, Inc.", L=New York, S=New York, C=US, PostalCode=10004, STREET=85 Broad Street, STREET=Floor 16, SERIALNUMBER=5666387, OID.1.3.6.1.4.1.311.60.2.1.2=Delaware, OID.1.3.6.1.4.1.311.60.2.1.3=US, OID.2.5.4.15=Private Organization | FBACD58EE3F0AF2FBFE8B02BDE35F616ADF18DC6</ProductionCertificate>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Win7 Debug|x64'">
-    <TestCertificate>
-    </TestCertificate>
+    <TestCertificate>CN="WDKTestCert Keybase,131177624875980674" | 926FB0A50FA650F97A0B8F1EFFD8B695711920D5</TestCertificate>
     <SignMode>TestSign</SignMode>
     <CrossCertificateFile>
     </CrossCertificateFile>
