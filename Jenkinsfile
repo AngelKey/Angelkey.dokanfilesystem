@@ -12,7 +12,7 @@ def doBuild() {
         }
     }
     dir("src/github.com/keybase/dokany/sys") {
-        bat "if EXIST sys.vcxproj.user rm sys.vcxproj.user"
+        bat "if EXIST sys.vcxproj.user del sys.vcxproj.user"
         bat "copy sys.vcxproj.user.keybase sys.vcxproj.user"
     }
     
