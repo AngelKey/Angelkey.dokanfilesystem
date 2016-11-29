@@ -12,7 +12,8 @@ def doBuild() {
         }
     }
     dir("src/github.com/keybase/dokany/sys") {
-        bat "rename sys.vcxproj.user.keybase sys.vcxproj.user"
+        bat "if EXIST sys.vcxproj.user rm sys.vcxproj.user"
+        bat "copy sys.vcxproj.user.keybase sys.vcxproj.user"
     }
     
     withEnv(["SIGNTOOL=signtool",
