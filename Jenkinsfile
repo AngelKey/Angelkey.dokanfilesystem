@@ -29,6 +29,8 @@ def doBuild() {
                     echo ADDITIONALCERT %ADDITIONALCERT%
                     echo CERTISSUER %CERTISSUER%
                     echo KEYBASE_WINBUILD %KEYBASE_WINBUILD%
+                    pwd
+                    dir /s /b version.xml
                     "%ProgramFiles(x86)%\\Microsoft Visual Studio 14.0\\vc\\bin\\vcvars32.bat" && build.bat
                 '''
                 archiveArtifacts 'src/github.com/keybase/dokany/dokan_wix/DokanSetup.exe,src/github.com/keybase/dokany/dokan_wix/DokanSetup_redist.exe,src/github.com/keybase/dokany/Win32/**/*,src/github.com/keybase/dokany/x64/**/*,src/github.com/keybase/dokany/dokan_wix/**/*'                
