@@ -15,12 +15,12 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <DefineConstants>Debug</DefineConstants>
-	<LinkerAdditionalOptions>-sw1132</LinkerAdditionalOptions>
+    <LinkerAdditionalOptions>-sw1132</LinkerAdditionalOptions>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-	<LinkerAdditionalOptions>-sw1132</LinkerAdditionalOptions>
+    <LinkerAdditionalOptions>-sw1132</LinkerAdditionalOptions>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Bundle.wxs" />
@@ -58,12 +58,23 @@
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <PropertyGroup>
+    <PostBuildEvent>if /I "$(ConfigurationName)" == "Release" (
+  "%25WIX%25\bin\insignia.exe" -ib "$(TargetDir)$(TargetFileName)" -o "$(TargetDir)engine.exe"
+  "%25SIGNTOOL%25" sign /v /t http://timestamp.verisign.com/scripts/timstamp.dll /i %25CERTISSUER%25 /ac "%25ADDITIONALCERT%25" "$(TargetDir)engine.exe"
+  "%25SIGNTOOL%25" sign /as /v /fd SHA256 /tr http://timestamp.globalsign.com/%3fsignature=sha2 /td SHA256 /i %25CERTISSUER%25 /ac "%25ADDITIONALCERT%25" "$(TargetDir)engine.exe"
+  "%25WIX%25\bin\insignia.exe" -ab "$(TargetDir)engine.exe" "$(TargetDir)$(TargetFileName)" -o "$(TargetDir)$(TargetFileName)"
+  "%25SIGNTOOL%25" sign /v /t http://timestamp.verisign.com/scripts/timstamp.dll /i %25CERTISSUER%25 /ac "%25ADDITIONALCERT%25" "$(TargetDir)$(TargetFileName)"
+  "%25SIGNTOOL%25" sign /as /v /fd SHA256 /tr http://timestamp.globalsign.com/%3fsignature=sha2 /td SHA256 /i %25CERTISSUER%25 /ac "%25ADDITIONALCERT%25" "$(TargetDir)$(TargetFileName)"
+  del "$(TargetDir)engine.exe"
+)</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
     <PreBuildEvent>cd /d "$(ProjectDir)"
 if NOT exist Redist\VCRedist_2015\vc_redist.x86.exe (
 if NOT exist Redist\ mkdir Redist
 if NOT exist Redist\VCRedist_2015\ mkdir Redist\VCRedist_2015\
-powershell -command "wget https://download.microsoft.com/download/2/6/8/268f7be7-8d2a-42d6-a823-5c6941a3d70a/vc_redist.x86.exe -OutFile Redist\VCRedist_2015\VC_redist.x86.exe"
-powershell -command "wget https://download.microsoft.com/download/6/3/a/63abaf83-2ca6-4460-90d7-12de8e815b1a/vc_redist.x64.exe -OutFile Redist\VCRedist_2015\VC_redist.x64.exe"
+powershell -command "wget https://download.microsoft.com/download/6/D/F/6DF3FF94-F7F9-4F0B-838C-A328D1A7D0EE/vc_redist.x86.exe -OutFile Redist\VCRedist_2015\VC_redist.x86.exe"
+powershell -command "wget https://download.microsoft.com/download/6/D/F/6DF3FF94-F7F9-4F0B-838C-A328D1A7D0EE/vc_redist.x64.exe -OutFile Redist\VCRedist_2015\VC_redist.x64.exe"
 )
 if NOT exist RedistKB2999226\Windows8.1-KB2999226-x64.msu (
 if NOT exist Redist\ mkdir Redist
@@ -75,17 +86,6 @@ powershell -command "wget https://download.microsoft.com/download/A/C/1/AC15393F
 powershell -command "wget https://download.microsoft.com/download/E/4/6/E4694323-8290-4A08-82DB-81F2EB9452C2/Windows8.1-KB2999226-x86.msu -OutFile Redist\KB2999226\Windows8.1-KB2999226-x86.msu"
 powershell -command "wget https://download.microsoft.com/download/9/6/F/96FD0525-3DDF-423D-8845-5F92F4A6883E/Windows8.1-KB2999226-x64.msu -OutFile Redist\KB2999226\Windows8.1-KB2999226-x64.msu"
 )</PreBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>if /I "$(ConfigurationName)" == "Release" (
-  "%25WIX%25\bin\insignia.exe" -ib "$(TargetDir)$(TargetFileName)" -o "$(TargetDir)engine.exe"
-  "%25SIGNTOOL%25" sign /v /t http://timestamp.verisign.com/scripts/timstamp.dll /i %25CERTISSUER%25 /ac "%25ADDITIONALCERT%25" "$(TargetDir)engine.exe"
-  "%25SIGNTOOL%25" sign /as /v /fd SHA256 /tr http://timestamp.globalsign.com/%3fsignature=sha2 /td SHA256 /i %25CERTISSUER%25 /ac "%25ADDITIONALCERT%25" "$(TargetDir)engine.exe"
-  "%25WIX%25\bin\insignia.exe" -ab "$(TargetDir)engine.exe" "$(TargetDir)$(TargetFileName)" -o "$(TargetDir)$(TargetFileName)"
-  "%25SIGNTOOL%25" sign /v /t http://timestamp.verisign.com/scripts/timstamp.dll /i %25CERTISSUER%25 /ac "%25ADDITIONALCERT%25" "$(TargetDir)$(TargetFileName)"
-  "%25SIGNTOOL%25" sign /as /v /fd SHA256 /tr http://timestamp.globalsign.com/%3fsignature=sha2 /td SHA256 /i %25CERTISSUER%25 /ac "%25ADDITIONALCERT%25" "$(TargetDir)$(TargetFileName)"
-  del "$(TargetDir)engine.exe"
-)</PostBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
