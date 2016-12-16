@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?include version.xml ?>
 
-<!--We need the Keybase Apps UpgradeCode so that Keybase Apps is uninstalled (and stopped) when Dokan is uninstalled as part of a Dokan major upgrade-->
-<?include ..\..\client\packaging\windows\WIXInstallers\version.xml ?>
-
 <?ifndef BuildCygwin ?>
 <?define BuildCygwin="false" ?>
 <?endif?>
@@ -23,20 +20,10 @@
              Platform="x86"
              InstallPrivileges="elevated"
              />
+    
     <Icon Id="DokanIcon"
           SourceFile="Dokan.ico"
           />
-
-    <!--We need to make sure Keybase Apps is uninstalled (and stopped) when Dokan is uninstalled as part of a Dokan major upgrade-->
-    <!--TODO verify earliest version we should uninstall, TODO include current version of Keybase Apps: Maximum="$(var.KeybaseWinVersion)" IncludeMaximum="yes" -->    
-    <Upgrade Id="$(var.KeybaseUpgradeCode)">
-      <UpgradeVersion
-        OnlyDetect="no"
-        Property='KEYBASE_APPS_UPGRADE'
-        IgnoreRemoveFailure='no'
-        Minimum="1.0.0.0" IncludeMinimum="yes" 
-      />
-    </Upgrade>
 
     <Upgrade Id="$(var.UpgradeCodeX86)">
       <UpgradeVersion
@@ -48,6 +35,7 @@
       />
     </Upgrade>
 
+    <!--The Dokan UpgradeCode must NOT change for major upgrade to work properly-->
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."
                   AllowSameVersionUpgrades="yes"/>
 
@@ -148,7 +136,7 @@
                   Property="ExecuteInstallAction"
                   Value="INSTALLFOLDER=[INSTALLDIR]"
                   />
-
+    
     <CustomAction Id="GetInstallDir"
                   Return="check"
                   Property="INSTALLDIR"
@@ -177,15 +165,32 @@
                 Impersonate="no"
                 />
 
+    <!--Clear REBOOT property to allow ForceReboot action when the bundle has set REBOOT to ReallySuppress-->
+    <SetProperty Id="REBOOT"
+                 Action="AllowReboots"
+                 Value=""
+                 After="RemoveExistingProducts"
+                 Sequence="execute"
+                 >
+      <![CDATA[WIX_UPGRADE_DETECTED AND NOT AFTERREBOOT]]>
+    </SetProperty>
+
     <InstallExecuteSequence>
 
+      <!--Protect against installing if there is a reboot pending caused by a Dokan uninstall-->
       <Custom Action='CheckForRebootPending' Before='LaunchConditions'>
         <![CDATA[DOKANREBOOTPENDING = "#1"]]>
       </Custom>
-
+      
       <Custom Action='CheckForUCRT' Before='LaunchConditions'>
         <![CDATA[Not REMOVE="ALL" AND Not PREVIOUSFOUND AND UCRTINSTALLED = ""]]>
       </Custom>
+
+      <!--A Major Upgrade of Dokan uninstalls then installs Dokan. The Difx driver install requires a reboot before installing again
+      Note that the bundle will set REBOOT=ReallySuppress so this abrupt reboot will not happen without changing the chainer or clearing REBOOT earlier in sequence.
+      Sequence after RemoveRegistryValues so we can delete the Keybase Run values and prevent Keybase from starting after the reboot - these will be recreated during Keybase upgrade-->
+      <ForceReboot After='RemoveRegistryValues'><![CDATA[WIX_UPGRADE_DETECTED AND NOT AFTERREBOOT]]></ForceReboot>
+      
       <Custom Action='GetInstallDir' Before='CostFinalize'><![CDATA[REMOVE="ALL"]]></Custom>
       <Custom Action="SetFolderValue" Before="ExecuteInstallAction" />
       <Custom Action='ExecuteInstallAction' After="PublishProduct"><![CDATA[Not REMOVE="ALL"]]></Custom>
@@ -201,7 +206,7 @@
       <Directory Id="ProgramFilesFolder">
         <Directory Id="DOKANDIR" Name="Dokan">
           <Directory Id="INSTALLDIR" Name="DokanLibrary-$(var.BaseVersion)">
-            <Component Id="ProgramFilesComponent" Win64="no" Guid="{93E94825-DE3C-4B8E-9C35-6D130386EFEA}">
+            <Component Id="ProgramFilesComponent" Win64="no" Guid="{16FB35F7-B061-464A-A4DF-E3FFB2B6EDE7}">
               <Environment Id="DokanLibraryEnvPath" Name="DokanLibrary$(var.MajorVersion)" Value="[INSTALLDIR]" Permanent="no" Part="all" Action="set" System="yes" />
               <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(var.ProductCodeX86)" >
                 <RegistryValue Type="string" Name="AppLocation" Value="[INSTALLDIR]" KeyPath="no" />
@@ -217,6 +222,10 @@
               <File Id="licenselgplTXT" Source="..\license.lgpl.txt" Name="license.lgpl.txt" KeyPath="no"/>
               <File Id="licensemitTXT" Source="..\license.mit.txt" Name="license.mit.txt" KeyPath="no"/>
               <RemoveFolder Id="RemoveINSTALLDIR" On="uninstall" />
+
+              <!--We need to make sure Keybase Apps executables are stopped and wont execute its run keys when Dokan is installed as part of a Dokan major upgrade-->
+              <RemoveRegistryValue Id="RemoveRunKeybaseGUI" Root="HKCU" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Run" Name="KeybaseGUI"/>
+              <RemoveRegistryValue Id="RemoveRunKeybase" Root="HKCU" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Run" Name="Keybase"/>
             </Component>
             <Component Id="Sys32PDBFiles" Guid="{D88F93D7-C6AA-4476-ABF0-1C3273303F08}">
               <File Id="DokanPDB" Source="..\Win32\$(var.Configuration)\dokan$(var.MajorVersion).pdb" Name="dokan$(var.MajorVersion).pdb" KeyPath="yes"/>
