@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?include version.xml ?>
 
+<!--We need the Keybase Apps UpgradeCode so that Keybase Apps is uninstalled (and stopped) when Dokan is uninstalled as part of a Dokan major upgrade-->
+<?include ..\..\client\packaging\windows\WIXInstallers\version.xml ?>
+
 <?ifndef BuildCygwin ?>
 <?define BuildCygwin="false" ?>
 <?endif?>
@@ -24,13 +27,24 @@
           SourceFile="Dokan.ico"
           />
 
-    <Upgrade Id='$(var.UpgradeCodeX86)'>
+    <!--We need to make sure Keybase Apps is uninstalled (and stopped) when Dokan is uninstalled as part of a Dokan major upgrade-->
+    <!--TODO verify earliest version we should uninstall, TODO include current version of Keybase Apps: Maximum="$(var.KeybaseWinVersion)" IncludeMaximum="yes" -->    
+    <Upgrade Id="$(var.KeybaseUpgradeCode)">
       <UpgradeVersion
-        OnlyDetect='no'
-        Property='PREVIOUSFOUND'
+        OnlyDetect="no"
+        Property='KEYBASE_APPS_UPGRADE'
         IgnoreRemoveFailure='no'
-        Minimum='0.1.0' IncludeMinimum='yes'
-        Maximum='$(var.BaseVersion)' IncludeMaximum='no'
+        Minimum="1.0.0.0" IncludeMinimum="yes" 
+      />
+    </Upgrade>
+
+    <Upgrade Id="$(var.UpgradeCodeX86)">
+      <UpgradeVersion
+        OnlyDetect="no"
+        Property="PREVIOUSFOUND"
+        IgnoreRemoveFailure="no"
+        Minimum="0.1.0" IncludeMinimum="yes"
+        Maximum="$(var.BaseVersion)" IncludeMaximum="no"
       />
     </Upgrade>
 
