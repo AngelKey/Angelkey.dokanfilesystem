@@ -24,20 +24,47 @@
     <Icon Id="DokanIcon"
           SourceFile="Dokan.ico"
           />
+   
+    <!--Windows Installer and WiX only compare the first three version fields - increment at least the thrid field each build-->
 
-    <Upgrade Id="$(var.UpgradeCodeX86)">
+    <!--Build 281 upgrade code - TODO was this shipped? -->
+    <!--TODO evenually delete this when upgrading from this build is not supported-->
+    <Upgrade Id="2EF80C86-44CE-4143-BA99-693D9F0B8C8D">
       <UpgradeVersion
-        OnlyDetect="no"
-        Property="PREVIOUSFOUND"
-        IgnoreRemoveFailure="no"
+        Property="WIX_UPGRADE_DETECTED_281"
+        Minimum="1.0.0.71" IncludeMinimum="yes"
+        />
+    </Upgrade>
+
+    <!--Dokan UpgradeCode before switching to the current-->
+    <!--TODO what is the minimum build we want to upgrade?-->
+    <Upgrade Id="$(var.OldUpgradeCodeX86)">
+      <UpgradeVersion
+        Property="WIX_UPGRADE_DETECTED_OLD"
         Minimum="0.1.0" IncludeMinimum="yes"
-        Maximum="$(var.BaseVersion)" IncludeMaximum="no"
+        Maximum="1.0.2" IncludeMaximum="no"
+        />
+    </Upgrade>
+
+    <!--The Keybase fork UpgradeCode changed at version 1.0.2-->    
+    <!--The Keybase fork UpgradeCode must NOT change for major upgrade to work properly-->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."
+                  AllowSameVersionUpgrades="yes"/>
+
+    <!--Detect installed Dokan versions in conflict with the Keybase fork-->
+    <!--Dokan UpgradeCode-->
+    <Upgrade Id="$(var.OldUpgradeCodeX86)">
+      <UpgradeVersion
+        Property="DOKAN_VERSION_CONFLICT"
+        OnlyDetect="yes"
+        Minimum="1.0.2" IncludeMinimum="yes"
       />
     </Upgrade>
 
-    <!--The Dokan UpgradeCode must NOT change for major upgrade to work properly-->
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."
-                  AllowSameVersionUpgrades="yes"/>
+    <Condition Message="An incompatible version of previous version of $(var.ProductName) is already installed. Please uninstall the existing version first, reboot the system and start the setup again.">
+      <![CDATA[DOKAN_VERSION_CONFLICT]]>
+    </Condition>    
+   
 
     <Property Id="ARPNOREPAIR" Value="1" />
     <Property Id="ARPNOMODIFY" Value="1" />
@@ -172,7 +199,7 @@
                  After="RemoveExistingProducts"
                  Sequence="execute"
                  >
-      <![CDATA[WIX_UPGRADE_DETECTED AND NOT AFTERREBOOT]]>
+      <![CDATA[(WIX_UPGRADE_DETECTED OR WIX_UPGRADE_DETECTED_OLD OR WIX_UPGRADE_DETECTED_281) AND NOT AFTERREBOOT]]>
     </SetProperty>
 
     <InstallExecuteSequence>
@@ -183,13 +210,13 @@
       </Custom>
       
       <Custom Action='CheckForUCRT' Before='LaunchConditions'>
-        <![CDATA[Not REMOVE="ALL" AND Not PREVIOUSFOUND AND UCRTINSTALLED = ""]]>
+        <![CDATA[Not REMOVE="ALL" AND Not (WIX_UPGRADE_DETECTED OR WIX_UPGRADE_DETECTED_OLD OR WIX_UPGRADE_DETECTED_281) AND UCRTINSTALLED = ""]]>
       </Custom>
 
       <!--A Major Upgrade of Dokan uninstalls then installs Dokan. The Difx driver install requires a reboot before installing again
       Note that the bundle will set REBOOT=ReallySuppress so this abrupt reboot will not happen without changing the chainer or clearing REBOOT earlier in sequence.
       Sequence after RemoveRegistryValues so we can delete the Keybase Run values and prevent Keybase from starting after the reboot - these will be recreated during Keybase upgrade-->
-      <ForceReboot After='RemoveRegistryValues'><![CDATA[WIX_UPGRADE_DETECTED AND NOT AFTERREBOOT]]></ForceReboot>
+      <ForceReboot After='RemoveRegistryValues'><![CDATA[(WIX_UPGRADE_DETECTED OR WIX_UPGRADE_DETECTED_OLD OR WIX_UPGRADE_DETECTED_281) AND NOT AFTERREBOOT]]></ForceReboot>
       
       <Custom Action='GetInstallDir' Before='CostFinalize'><![CDATA[REMOVE="ALL"]]></Custom>
       <Custom Action="SetFolderValue" Before="ExecuteInstallAction" />

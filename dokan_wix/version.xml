@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
 <?define ProductName="Dokan Library" ?>
-<?define ProductCodeX64="*" ?>
-<?define UpgradeCodeX64="{2EF80C64-08A6-4FE1-BE92-13FD293C831B}" ?>
-<?define ProductCodeX86="*" ?>
-<?define UpgradeCodeX86="{2EF80C86-08A6-4FE1-BE92-13FD293C831B}" ?>
+<?define ProductCodeX64="{65A3A964-3DC3-0100-0001-161103142713}" ?>
+<?define UpgradeCodeX64="{3C7F6C64-02BD-4912-B974-A167C468432C}" ?> <!--Keybase fork must keep this upgrade code constant-->
+<?define OldUpgradeCodeX64="{2EF80C64-08A6-4FE1-BE92-13FD293C831B}" ?>    
+<?define ProductCodeX86="{65A3A986-3DC3-0100-0001-161103142713}" ?>
+<?define UpgradeCodeX86="{3C7F6C86-02BD-4912-B974-A167C468432C}" ?> <!--Keybase fork must keep this upgrade code constant-->
+<?define OldUpgradeCodeX86="{2EF80C86-08A6-4FE1-BE92-13FD293C831B}" ?>  
 <?define ProviderKey="{5F030BFA-CE6E-408A-9694-F593B319DBBE}" ?>
-<?define BundleUpgradeCode="{A30D29CD-FA58-4542-8D41-7EDD1FB1EE5A}" ?>
-<?define BaseVersion="1.0.1" ?>
+<?define BundleUpgradeCode="{B0DA51A7-F8F2-4F1B-830A-19A57F44F31C}" ?> <!--Keybase fork does not use the Dokan bundle but keep this separate and constant-->
+<?define BaseVersion="1.0.2" ?> <!--Windows Installer and WiX only compare the first three version fields - increment at least the thrid field each build-->
 <?define MajorVersion="1" ?>
-<?define BuildVersion="82" ?>
+<?define BuildVersion="1000" ?>
 <?define CompanyName="Dokany Project" ?>
 <?define ShortCompanyName="Dokany Project" ?>
 <?define UpdateURL="https://dokan-dev.github.io/" ?>
 <?define InstallerVersion="500" ?>
 <?define Compressed="yes" ?>
 <?define BuildCygwin="false" ?>
-<?define VCMinRequired="14.0.24212" ?>  
+<?define VCMinRequired="14.0.24212" ?> <!--Check for this version or higher of the VC Runtimes--> 
 </Include>
