@@ -61,10 +61,9 @@
       />
     </Upgrade>
 
-    <Condition Message="An incompatible version of previous version of $(var.ProductName) is already installed. Please uninstall the existing version first, reboot the system and start the setup again.">
+    <Condition Message="An incompatible version of $(var.ProductName) is already installed. Please uninstall the existing version first, reboot the system, and start the install again.">
       <![CDATA[DOKAN_VERSION_CONFLICT]]>
-    </Condition>    
-   
+    </Condition>
 
     <Property Id="ARPNOREPAIR" Value="1" />
     <Property Id="ARPNOMODIFY" Value="1" />
