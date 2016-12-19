@@ -50,15 +50,16 @@
                      Path="[WindowsFolder]System32\ucrtbase.dll"
                      Variable="UCRTVERSION64"
                      Result="version"
+                     Condition="VersionNT64"
                        />
 
     <util:RegistrySearch Id="vcredist_2015_x86_check" Root="HKLM" Key="SOFTWARE\Microsoft\DevDiv\VC\Servicing\14.0\RuntimeMinimum" Value="Install" Variable="vcredist_2015_x86_installed" Win64="no"/>
     <util:RegistrySearch Id="vcredist_2015_x86_versioncheck" Root="HKLM" Key="SOFTWARE\Classes\Installer\Dependencies\Microsoft.VS.VC_RuntimeMinimumVSU_x86,v14" Value="Version" Variable="vcredist_2015_x86_version" Result="exists" Win64="no"/>
     <util:RegistrySearch Id="vcredist_2015_x86_versionnumbercheck" Root="HKLM" Key="SOFTWARE\Classes\Installer\Dependencies\Microsoft.VS.VC_RuntimeMinimumVSU_x86,v14" Value="Version" Variable="vcredist_2015_x86_versionnumber" Result="value" Win64="no"/>
 
-    <util:RegistrySearch Id="vcredist_2015_x64_check" Root="HKLM" Key="SOFTWARE\Microsoft\DevDiv\VC\Servicing\14.0\RuntimeMinimum" Value="Install" Variable="vcredist_2015_x64_installed" Win64="yes"/>
-    <util:RegistrySearch Id="vcredist_2015_x64_versioncheck" Root="HKLM" Key="SOFTWARE\Classes\Installer\Dependencies\Microsoft.VS.VC_RuntimeMinimumVSU_amd64,v14" Value="Version" Variable="vcredist_2015_x64_version" Result="exists" Win64="yes"/>
-    <util:RegistrySearch Id="vcredist_2015_x64_versionnumbercheck" Root="HKLM" Key="SOFTWARE\Classes\Installer\Dependencies\Microsoft.VS.VC_RuntimeMinimumVSU_amd64,v14" Value="Version" Variable="vcredist_2015_x64_versionnumber" Result="value" Win64="yes"/>
+    <util:RegistrySearch Id="vcredist_2015_x64_check" Root="HKLM" Key="SOFTWARE\Microsoft\DevDiv\VC\Servicing\14.0\RuntimeMinimum" Value="Install" Variable="vcredist_2015_x64_installed" Win64="yes" Condition="VersionNT64"/>
+    <util:RegistrySearch Id="vcredist_2015_x64_versioncheck" Root="HKLM" Key="SOFTWARE\Classes\Installer\Dependencies\Microsoft.VS.VC_RuntimeMinimumVSU_amd64,v14" Value="Version" Variable="vcredist_2015_x64_version" Result="exists" Win64="yes" Condition="VersionNT64"/>
+    <util:RegistrySearch Id="vcredist_2015_x64_versionnumbercheck" Root="HKLM" Key="SOFTWARE\Classes\Installer\Dependencies\Microsoft.VS.VC_RuntimeMinimumVSU_amd64,v14" Value="Version" Variable="vcredist_2015_x64_versionnumber" Result="value" Win64="yes" Condition="VersionNT64"/>
 
     <bal:Condition Message="Installation failed because your version of Windows is too old. Dokan requires Windows 7 SP1 or newer."><![CDATA[Installed OR VersionNT > v6.1 OR (VersionNT = v6.1 AND ServicePackLevel >= 1)]]></bal:Condition>
 
@@ -79,8 +80,11 @@
                   Cache="no"
                   SuppressSignatureVerification="yes"
                   SourceFile="Redist\VCRedist_2015\vc_redist.x86.exe"
-                  DownloadUrl="https://download.microsoft.com/download/6/D/F/6DF3FF94-F7F9-4F0B-838C-A328D1A7D0EE/vc_redist.x86.exe"
-      />
+                  >
+        <ExitCode Value="1641" Behavior="scheduleReboot"/>
+        <ExitCode Value="3010" Behavior="scheduleReboot"/>
+        <ExitCode Value="0" Behavior="success" />
+      </ExePackage>
 
       <ExePackage Id="vcredist_2015_x64.exe"
                   Name="vc_redist.x64.exe"
@@ -97,8 +101,11 @@
                   Cache="yes"
                   SuppressSignatureVerification="yes"
                   SourceFile="Redist\VCRedist_2015\vc_redist.x64.exe"
-                  DownloadUrl="https://download.microsoft.com/download/6/D/F/6DF3FF94-F7F9-4F0B-838C-A328D1A7D0EE/vc_redist.x64.exe"
-                  />
+                  >
+        <ExitCode Value="1641" Behavior="scheduleReboot"/>
+        <ExitCode Value="3010" Behavior="scheduleReboot"/>
+        <ExitCode Value="0" Behavior="success" />
+      </ExePackage>
 
       <MsuPackage Id="Win71_KB2999226_x86"
                   Name="Windows6.1-KB2999226-x86.msu"
