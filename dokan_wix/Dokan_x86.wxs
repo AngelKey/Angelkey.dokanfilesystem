@@ -193,8 +193,8 @@
                 />
 
     <!--Clear REBOOT property to allow ForceReboot action when the bundle has set REBOOT to ReallySuppress-->
-    <SetProperty Id="REBOOT"
-                 Action="AllowReboots"
+    <SetProperty Action="AllowReboots"
+                 Id="REBOOT"                 
                  Value=""
                  After="RemoveExistingProducts"
                  Sequence="execute"
@@ -203,7 +203,6 @@
     </SetProperty>
 
     <InstallExecuteSequence>
-
       <!--Protect against installing if there is a reboot pending caused by a Dokan uninstall-->
       <Custom Action='CheckForRebootPending' Before='LaunchConditions'>
         <![CDATA[DOKANREBOOTPENDING = "#1"]]>
@@ -212,7 +211,15 @@
       <Custom Action='CheckForUCRT' Before='LaunchConditions'>
         <![CDATA[Not REMOVE="ALL" AND Not (WIX_UPGRADE_DETECTED OR WIX_UPGRADE_DETECTED_OLD OR WIX_UPGRADE_DETECTED_281) AND UCRTINSTALLED = ""]]>
       </Custom>
-
+      
+      <!--Remove "old installer" Keybase startup shortcuts during upgrade. TODO eventually remove these-->
+      <Custom Action='RemoveKeybaseGUIShortcut' Before='RemoveRegistryValues'>
+        <![CDATA[STARTUPKEYBASEGUISHORTCUT AND (WIX_UPGRADE_DETECTED OR WIX_UPGRADE_DETECTED_OLD OR WIX_UPGRADE_DETECTED_281) AND NOT AFTERREBOOT]]>
+      </Custom>
+      <Custom Action='RemoveKeybaseShortcut' Before='RemoveRegistryValues'>
+        <![CDATA[STARTUPKEYBASESHORTCUT AND (WIX_UPGRADE_DETECTED OR WIX_UPGRADE_DETECTED_OLD OR WIX_UPGRADE_DETECTED_281) AND NOT AFTERREBOOT]]>
+      </Custom>
+      
       <!--A Major Upgrade of Dokan uninstalls then installs Dokan. The Difx driver install requires a reboot before installing again
       Note that the bundle will set REBOOT=ReallySuppress so this abrupt reboot will not happen without changing the chainer or clearing REBOOT earlier in sequence.
       Sequence after RemoveRegistryValues so we can delete the Keybase Run values and prevent Keybase from starting after the reboot - these will be recreated during Keybase upgrade-->
@@ -249,7 +256,6 @@
               <File Id="licenselgplTXT" Source="..\license.lgpl.txt" Name="license.lgpl.txt" KeyPath="no"/>
               <File Id="licensemitTXT" Source="..\license.mit.txt" Name="license.mit.txt" KeyPath="no"/>
               <RemoveFolder Id="RemoveINSTALLDIR" On="uninstall" />
-
               <!--We need to make sure Keybase Apps executables are stopped and wont execute its run keys when Dokan is installed as part of a Dokan major upgrade-->
               <RemoveRegistryValue Id="RemoveRunKeybaseGUI" Root="HKCU" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Run" Name="KeybaseGUI"/>
               <RemoveRegistryValue Id="RemoveRunKeybase" Root="HKCU" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Run" Name="Keybase"/>
@@ -426,5 +432,46 @@
     </Component>
   </Fragment>
   <?endif?>
+  
+  <Fragment>
+    <!--Search for Keybase startup shortcuts and delete them.  TODO eventually remove these when upgrading from "old installer" is not supported-->
+    <!--We need to be explicit with the path since this install sets ALLUSERS and thus StartMenuFolder is set to the "all users" profile instead of the current user-->
+    <!--SetProperty Sequence="execute" must be set since some Before reference to RemoveRegistryValues don't exist in the InstallUISequence-->
+    <Property Id="STARTUPKEYBASEGUISHORTCUT" Secure="yes">
+      <DirectorySearch Id="STARTUPKEYBASEGUISHORTCUT_FileSearch" Path="[AppDataFolder]Microsoft\Windows\Start Menu\Programs\Keybase" Depth="0">
+        <FileSearch Name="GUIStartup.lnk"/>
+      </DirectorySearch>
+    </Property>
+    <SetProperty Id="RemoveKeybaseGUIShortcut"
+                 Value="&quot;[SystemFolder]cmd.exe&quot; /C del &quot;[STARTUPKEYBASEGUISHORTCUT]&quot;"
+                 Before="RemoveKeybaseGUIShortcut"
+                 Sequence="execute">
+      <![CDATA[STARTUPKEYBASEGUISHORTCUT]]>
+    </SetProperty>
+    <CustomAction Id="RemoveKeybaseGUIShortcut"
+                  BinaryKey="WixCA"
+                  DllEntry="WixQuietExec"
+                  Execute="deferred"
+                  Return="ignore"
+                  Impersonate="yes"/>
+
+    <Property Id="STARTUPKEYBASESHORTCUT" Secure="yes">
+      <DirectorySearch Id="STARTUPKEYBASESHORTCUT_FileSearch" Path="[AppDataFolder]Microsoft\Windows\Start Menu\Programs\Keybase" Depth="0">
+        <FileSearch Name="KeybaseStartup.lnk"/>
+      </DirectorySearch>
+    </Property>
+    <SetProperty Id="RemoveKeybaseShortcut"
+                 Value="&quot;[SystemFolder]cmd.exe&quot; /C del &quot;[STARTUPKEYBASESHORTCUT]&quot;"
+                 Before="RemoveKeybaseShortcut"
+                 Sequence="execute">
+      <![CDATA[STARTUPKEYBASESHORTCUT]]>
+    </SetProperty>
+    <CustomAction Id="RemoveKeybaseShortcut"
+                  BinaryKey="WixCA"
+                  DllEntry="WixQuietExec"
+                  Execute="deferred"
+                  Return="ignore"
+                  Impersonate="yes"/>
+  </Fragment>
   
 </Wix>
