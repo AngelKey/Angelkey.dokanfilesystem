@@ -20,10 +20,21 @@ namespace SetAssemblyVersion
             }
 
             // Expected content of changelog.md file:
+            // Version.Build may only be 0-9 before Version.Minor must be incremented
 
+            // Old Style
             //--------------------------------
             // ## [Unreleased] - 1.0.0.4000
             // ## [1.0.0.5000] - 2015-12-10
+            //--------------------------------
+
+            // New Style
+            //--------------------------------
+            // ## [Unreleased] - 1.0.04000
+            // ## [1.1.0.8000] - 2016-12-19
+            // ## [1.0.9.7000] - 2016-12-19
+            // ## [1.0.1.6000] - 2016-2-27
+            // ## [1.0.0.5000] - 2016-1-10
             //--------------------------------
 
             var productVersion = ReadVersion(args[0]);
@@ -32,14 +43,38 @@ namespace SetAssemblyVersion
 
             Console.WriteLine("");
 
+            // The build field is now build*10000 + revision so Windows Installer and WiX can compare versions in three fields
+
+            var Major = productVersion.Major;
+            var Minor = productVersion.Minor;
+            var Build = productVersion.Build;
+            var Revision = productVersion.Revision;
+
+            if (productVersion.Revision > 9999)
+            {
+                Build++;
+                Revision = 0;
+            }
+
+            if (Build > 9)
+            {
+                Minor++;
+                Build = 0;
+            }
+
+            var RevisionString = productVersion.Revision.ToString("0000");
+
             var version =
-                $"{productVersion.Major}.{productVersion.Minor}.{productVersion.Build}.{productVersion.Revision.ToString("0000")}";
+                $"{Major}.{Minor}.{Build}{RevisionString}.0";
             var versionComma =
-                $"{productVersion.Major},{productVersion.Minor},{productVersion.Build},{productVersion.Revision.ToString("0000")}";
+                $"{Major},{Minor},{Build}{RevisionString},0";
 
-                var xmlFile = args[1].Replace("\"", "").Trim();
+            var versionOld =
+                $"{Major}.{Minor}.{Build}.{RevisionString}";
 
-                var result = ModifyProductParametersXml(xmlFile, productVersion);
+            var xmlFile = args[1].Replace("\"", "").Trim();
+
+                var result = ModifyProductParametersXml(xmlFile, Version.Parse(versionOld)); // This expects the old style version
                 if ((EReturnCode) result == EReturnCode.None)
                 {
                     var files = Directory.GetFiles(args[2], "*.rc", SearchOption.AllDirectories);
@@ -57,11 +92,11 @@ namespace SetAssemblyVersion
 
                     Console.WriteLine("Update build VS define versions");
                     var props = File.ReadAllText(args[2] + @"\Dokan.props");
-                    var majorApiDefineVersionString = $@"<DOKANAPIVersion>{productVersion.Major}</DOKANAPIVersion>";
+                    var majorApiDefineVersionString = $@"<DOKANAPIVersion>{Major}</DOKANAPIVersion>";
                     props = Regex.Replace(props, @"<DOKANAPIVersion>[0-9]+<\/DOKANAPIVersion>",
                         majorApiDefineVersionString);
                     var defineVersionString =
-                        $@"<DOKANVersion>{productVersion.Major}.{productVersion.Minor}.{productVersion.Build}</DOKANVersion>";
+                        $@"<DOKANVersion>{Major}.{Minor}.{Build}</DOKANVersion>";
                     props = Regex.Replace(props, @"<DOKANVersion>[0-9]+.[0-9]+.[0-9]+<\/DOKANVersion>",
                         defineVersionString);
                     File.WriteAllText(args[2] + @"\Dokan.props", props);
@@ -86,7 +121,7 @@ namespace SetAssemblyVersion
                 var regExVersion = new Regex(ProductVersionRegex, RegexOptions.IgnoreCase);
 
                 var line = 0;
-                while (reader.Peek() != 0 && line < 10) // find version in first 5 lines 
+                while (reader.Peek() != 0 && line < 10) // find version in first n lines 
                 {
                     line++;
                     var data = reader.ReadLine();
