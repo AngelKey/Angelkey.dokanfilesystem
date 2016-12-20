@@ -6,9 +6,9 @@
      xmlns:util='http://schemas.microsoft.com/wix/UtilExtension'
      xmlns:netfx='http://schemas.microsoft.com/wix/NetFxExtension'
 >
-  <Bundle Name="$(var.ProductName) $(var.BaseVersion).$(var.BuildVersion) Bundle"
+  <Bundle Name="$(var.ProductName) $(var.BaseVersion)$(var.BuildVersion) Bundle"
           IconSourceFile="..\dokan.ico"
-          Version="$(var.BaseVersion).$(var.BuildVersion)"
+          Version="$(var.BaseVersion)$(var.BuildVersion)"
           Manufacturer="$(var.CompanyName)"
           dep:ProviderKey="$(var.ProviderKey)"
           UpgradeCode="$(var.BundleUpgradeCode)"

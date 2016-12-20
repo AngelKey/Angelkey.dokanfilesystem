@@ -9,9 +9,9 @@
      xmlns:difx="http://schemas.microsoft.com/wix/DifxAppExtension">
 
   <Product Id="$(var.ProductCodeX64)"
-           Name="$(var.ProductName) $(var.BaseVersion).$(var.BuildVersion) (x64)"
+           Name="$(var.ProductName) $(var.BaseVersion)$(var.BuildVersion) (x64)"
            Language="1033"
-           Version="$(var.BaseVersion).$(var.BuildVersion)"
+           Version="$(var.BaseVersion)$(var.BuildVersion)"
            Manufacturer="$(var.CompanyName)"
            UpgradeCode="$(var.UpgradeCodeX64)">
     
@@ -43,27 +43,26 @@
       <UpgradeVersion
         Property="WIX_UPGRADE_DETECTED_OLD"
         Minimum="0.1.0" IncludeMinimum="yes"
-        Maximum="1.0.2" IncludeMaximum="no"
+        Maximum="1.0.1" IncludeMaximum="yes"
       />
     </Upgrade>
-
-    <!--The Keybase fork UpgradeCode changed at version 1.0.2-->
-    <!--The Keybase fork UpgradeCode must NOT change for major upgrade to work properly-->
-    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."
-                  AllowSameVersionUpgrades="yes"/>
-
+    
     <!--Detect installed Dokan versions in conflict with the Keybase fork-->
     <!--Dokan UpgradeCode-->
     <Upgrade Id="$(var.OldUpgradeCodeX64)">
       <UpgradeVersion
         Property="DOKAN_VERSION_CONFLICT"
         OnlyDetect="yes"
-        Minimum="1.0.2" IncludeMinimum="yes"
+        Minimum="1.0.1" IncludeMinimum="no"
       />
     </Upgrade>
 
+    <!--The Keybase fork UpgradeCode changed at version 1.0.20000-->
+    <!--The Keybase fork UpgradeCode must NOT change for major upgrade to work properly-->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."/>
+
     <Condition Message="An incompatible version of $(var.ProductName) is already installed. Please uninstall the existing version first, reboot the system and start the setup again.">
-      <![CDATA[DOKAN_VERSION_CONFLICT]]>
+      <![CDATA[NOT DOKAN_VERSION_CONFLICT]]>
     </Condition>
 
     <Property Id="ARPNOREPAIR" Value="1" />
@@ -258,7 +257,7 @@
                 <RegistryValue Type="string" Name="AppLocation" Value="[INSTALLDIR]" KeyPath="no" />
               </RegistryKey>
               <RegistryKey Root="HKLM" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(var.ProductCodeX64)" >
-                <RegistryValue Type="string" Name="FullVersion" Value="$(var.BaseVersion).$(var.BuildVersion)" KeyPath="no"/>
+                <RegistryValue Type="string" Name="FullVersion" Value="$(var.BaseVersion)$(var.BuildVersion)" KeyPath="no"/>
               </RegistryKey>
               <File Id="DokanDLL" Source="..\x64\$(var.Configuration)\dokan$(var.MajorVersion).dll" Name="dokan$(var.MajorVersion).dll" KeyPath="no"/>
               <File Id="DokannpDLL" Source="..\x64\$(var.Configuration)\dokannp$(var.MajorVersion).dll" Name="dokannp$(var.MajorVersion).dll" KeyPath="no"/>
