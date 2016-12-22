@@ -7,8 +7,10 @@
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
      xmlns:difx="http://schemas.microsoft.com/wix/DifxAppExtension">
+
+  <!--Product version uses three fields (e.g. 1.0.20000) so Windows Installer can compare properly-->
   <Product Id="$(var.ProductCodeX86)"
-           Name="$(var.ProductName) $(var.BaseVersion)$(var.BuildVersion) (x86)"
+           Name="$(var.ProductName) (x86)"
            Language="1033"
            Version="$(var.BaseVersion)$(var.BuildVersion)"
            Manufacturer="$(var.CompanyName)"
@@ -24,21 +26,21 @@
     <Icon Id="DokanIcon"
           SourceFile="Dokan.ico"
           />
-   
-    <!--Windows Installer and WiX only compare the first three version fields - increment at least the thrid field each build-->
 
-    <!--Build 281 upgrade code - TODO was this shipped? -->
+    <!--Windows Installer only compares the first three version fields-->
+
+    <!--Keybase Build 281 upgrade code special case-->
     <!--TODO evenually delete this when upgrading from this build is not supported-->
     <Upgrade Id="2EF80C86-44CE-4143-BA99-693D9F0B8C8D">
       <UpgradeVersion
         Property="WIX_UPGRADE_DETECTED_281"
-        Minimum="1.0.0.71" IncludeMinimum="yes"
+        Minimum="1.0.0" IncludeMinimum="yes"
         />
     </Upgrade>
 
     <!--Dokan UpgradeCode before switching to the current-->
     <!--TODO what is the minimum build we want to upgrade?-->
-    <Upgrade Id="$(var.OldUpgradeCodeX86)">
+    <Upgrade Id="$(var.OldUpgradeX86)">
       <UpgradeVersion
         Property="WIX_UPGRADE_DETECTED_OLD"
         Minimum="0.1.0" IncludeMinimum="yes"
@@ -48,7 +50,7 @@
 
     <!--Detect installed Dokan versions in conflict with the Keybase fork-->
     <!--Dokan UpgradeCode-->
-    <Upgrade Id="$(var.OldUpgradeCodeX86)">
+    <Upgrade Id="$(var.OldUpgradeX86)">
       <UpgradeVersion
         Property="DOKAN_VERSION_CONFLICT"
         OnlyDetect="yes"
@@ -56,11 +58,11 @@
       />
     </Upgrade>
 
-    <!--The Keybase fork UpgradeCode changed at version 1.0.2-->    
+    <!--The Keybase fork UpgradeCode changed at version 1.0.20000-->    
     <!--The Keybase fork UpgradeCode must NOT change for major upgrade to work properly-->
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."/>
 
-    <Condition Message="An incompatible version of $(var.ProductName) is already installed. Please uninstall the existing version first, reboot the system, and start the install again.">
+    <Condition Message="An incompatible version of [ProductName] is already installed. Please uninstall the existing version first, reboot the system, and start the install again.">
       <![CDATA[NOT DOKAN_VERSION_CONFLICT]]>
     </Condition>
 
