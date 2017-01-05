@@ -10,7 +10,7 @@
 
   <!--Product version uses three fields (e.g. 1.0.20000) so Windows Installer can compare properly-->
   <Product Id="$(var.ProductCodeX64)"
-           Name="$(var.ProductName) (x64)"
+           Name="$(var.ProductName) $(var.BaseVersion)$(var.BuildVersion) (x64)"
            Language="1033"
            Version="$(var.BaseVersion)$(var.BuildVersion)"
            Manufacturer="$(var.CompanyName)"

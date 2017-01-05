@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
-<?define ProductName="Dokan Library" ?>
+<?define ProductName="Dokan Library - Keybase" ?>
 <?define ProductCodeX64="{65A3A964-3DC3-0100-0002-161222083120}" ?>
 <?define UpgradeCodeX64="{3C7F6C64-02BD-4912-B974-A167C468432C}" ?> <!--Keybase fork must keep this upgrade code constant-->
 <?define OldUpgradeX64="{2EF80C64-08A6-4FE1-BE92-13FD293C831B}" ?>    
