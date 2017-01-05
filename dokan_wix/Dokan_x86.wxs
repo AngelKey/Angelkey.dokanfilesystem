@@ -438,7 +438,7 @@
     <!--We need to be explicit with the path since this install sets ALLUSERS and thus StartMenuFolder is set to the "all users" profile instead of the current user-->
     <!--SetProperty Sequence="execute" must be set since some Before reference to RemoveRegistryValues don't exist in the InstallUISequence-->
     <Property Id="STARTUPKEYBASEGUISHORTCUT" Secure="yes">
-      <DirectorySearch Id="STARTUPKEYBASEGUISHORTCUT_FileSearch" Path="[AppDataFolder]Microsoft\Windows\Start Menu\Programs\Keybase" Depth="0">
+      <DirectorySearch Id="STARTUPKEYBASEGUISHORTCUT_FileSearch" Path="[AppDataFolder]Microsoft\Windows\Start Menu\Programs\Startup" Depth="0">
         <FileSearch Name="GUIStartup.lnk"/>
       </DirectorySearch>
     </Property>
@@ -456,7 +456,7 @@
                   Impersonate="yes"/>
 
     <Property Id="STARTUPKEYBASESHORTCUT" Secure="yes">
-      <DirectorySearch Id="STARTUPKEYBASESHORTCUT_FileSearch" Path="[AppDataFolder]Microsoft\Windows\Start Menu\Programs\Keybase" Depth="0">
+      <DirectorySearch Id="STARTUPKEYBASESHORTCUT_FileSearch" Path="[AppDataFolder]Microsoft\Windows\Start Menu\Programs\Startup" Depth="0">
         <FileSearch Name="KeybaseStartup.lnk"/>
       </DirectorySearch>
     </Property>
