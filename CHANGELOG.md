@@ -3,7 +3,74 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] - 1.0.4.1000
+## [1.1.0.1000] - 2017-11-28
+### Added
+- Mirror - Add Impersonate Option for Security Enhancement.
+- FUSE - Add read-only option
+- Installer - Add VCRedistVersion variable / Now display version needed
+- Dokanctl - Add usage option /?
+- Kernel / Library - Add New FileRenameInformationEx since Windows 10 RS1
+
+### Changed
+- FUSE - cross-compile 32-bit Cygwin DLL from 64-bit
+- Library - Merge DokanMapStandardToGenericAccess with DokanMapKernelToUserCreateFileFlags
+- Move to VS 2017 / v141 / SDK 10.0.16299.0 / Installer Redist 2017
+
+### Fixed
+- Kernel - Fix current session unmount not releasing the device properly
+- Mirror - Cannot open a read only file for delete 
+- Mirror - Fix SetFileAttributes implementation by not updating when FileAttributes is 0x00
+- Installer - Wrong new logo size 
+- Kernel - Fixes #616 Only lock when not paging io 
+
+## [1.0.5.1000] - 2017-09-19
+### Added
+- Kernel - Add `FILE_NOTIFY_CHANGE_SECURITY` during SetSecurity
+
+### Changed
+- Kernel - Createfile move `DOKAN_DELETE_ON_CLOSE` set flag after create success
+- Kernel - Return acces denied for paging file open request
+
+### Fixed
+- Kernel - CreateFile return `STATUS_DELETE_PENDING` for a request without share delete during a pending delete
+- Mirror - `FindClose` is not being called if `GetLastError` returns anything other `ERROR_NO_MORE_FILES`
+
+## [1.0.4.1000] - 2017-08-31
+### Added
+- Library - Support `FileIdFullDirectoryInformation`
+- CI - IFSTest !
+- Kernel - Add `FILE_NOTIFY_CHANGE_LAST_WRITE` in cleanup after write
+- Kernel - Notify file size changed after a write beyond old size
+
+### Changed
+- Mirror -  Query underlying fs for filesystem flags and AND them with mirror default flags.
+			Get filesystem name and maximum component length from underlying fs.
+			Change default maximum component length from 256 to 255.
+- Library - Doc Add context release info in CreateFile
+- Build - PS Sign - Add env variables required in comments
+- Mirror - Ensure the Security Descriptor length is set in mirror
+- Library - `DokanNetworkProviderUninstall` Make a single call of wcsstr
+- Library - `DokanNetworkProviderUninstall` if `DOKAN_NP_NAME` is already removed return `TRUE`
+- Mirror - Return `STATUS_INVALID_PARAMETER` error when folder is asked to be created with `FILE_ATTRIBUTE_TEMPORARY`
+- Mirror - Always set `FILE_SHARE_READ` for directory to avoid sharing violation for `FindFirstFile`
+- Library - When looking parent folder if we have the right to remove a file, cleanup `FILE_NON_DIRECTORY_FILE`
+- Library - Set proper information for `FILE_OVERWRITE` (`TRUNCATE_EXISTING`) 
+- Mirror - Microsoft doc say `TRUNCATE_EXISTING` need GENERIC_WRITE so we add it
+
+### Fixed
+- Installer - Exe not signed
+- Mirror - add `FILE_NAMED_STREAMS` to FileSystemFlags
+- Kernel - Issue #490 #502 #503 #554 #412
+- Library - Fix dokanctl UAC execution level
+- FUSE - Warning due to `DWORD` printed as %d
+- FUSE - Braces warning and remove commented code
+- Kernel - BSOD with verifier enabled
+- Kernel - BSOD during searching the backslash
+- Kernel - Buffer len check `IOCTL_MOUNTDEV_QUERY_SUGGESTED_LINK_NAME`
+- Kernel - Fix wrong error return for invalid relative file creation with leading slash
+- Mirror - Return proper error when open a directory with `FILE_NON_DIRECTORY_FILE`
+- Mirror - Cannot overwrite a hidden or system file if flag not set return `STATUS_ACCESS_DENIED`
+- Mirror - Update FileAttributes with previous when `TRUNCATE_EXISTING` file 
 
 ## [1.0.3.1000] - 2017-03-24
 ### Added
@@ -15,8 +82,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ### Changed
 - Library - Improve some mount error messages.
-- FUSE - Return error when file open as directory with FILE_NON_DIRECTORY_FILE.
-- Kernel - Clean all global disk device data in CleanupGlobalDiskDevice
+- FUSE - Return error when file open as directory with `FILE_NON_DIRECTORY_FILE`.
+- Kernel - Clean all global disk device data in `CleanupGlobalDiskDevice`
 - Kernel - Update mount point if mount manager did not follow our suggestion.
 
 ### Fixed
@@ -45,9 +112,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Changed
 - FUSE - Use pkg-config for building mirror
 - Kernel - Many improvement allocation stack and heap
-- Kernel - Enable PAGED_CODE for `DokanCheckShareAccess`
+- Kernel - Enable `PAGED_CODE` for `DokanCheckShareAccess`
 - Mirror - Return empty SACL if mirror doesn't have SeSecurityPrivilege
-- Library - Use DeleteMountPoint for removing reparse point instead of `DeleteVolumeMountPoint`
+- Library - Use `DeleteMountPoint` for removing reparse point instead of `DeleteVolumeMountPoint`
 - Library - Remove Redundant control flow jump 
 
 ### Fixed
@@ -267,7 +334,9 @@ Latest Dokan version from Hiroki Asakawa.
  [http://dokan-dev.net/en]( http://web.archive.org/web/20150419082954/http://dokan-dev.net/en/)
 
 
-[Unreleased]: https://github.com/dokan-dev/dokany/compare/v1.0.3...master
+[Unreleased]: https://github.com/dokan-dev/dokany/compare/v1.0.5...master
+[1.0.5.1000]: https://github.com/dokan-dev/dokany/compare/v1.0.4...v1.0.5
+[1.0.4.1000]: https://github.com/dokan-dev/dokany/compare/v1.0.3...v1.0.4
 [1.0.3.1000]: https://github.com/dokan-dev/dokany/compare/v1.0.2...v1.0.3
 [1.0.2.1000]: https://github.com/dokan-dev/dokany/compare/v1.0.1...v1.0.2
 [1.0.1.1000]: https://github.com/dokan-dev/dokany/compare/v1.0.0...v1.0.1
